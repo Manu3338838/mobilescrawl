@@ -1,0 +1,55 @@
+def get_new_ads(url):
+    response = requests.get(url)
+    soup = bs4.BeautifulSoup(response.content, "html.parser")
+
+    # Liste der neuen Inserate
+    new_ads = []
+
+    # Alle Inserate auf der Seite abrufen
+    for ad in soup.find_all("div", class_="listing-item-content"):
+        # Datum des Inserats
+        ad_date = ad.find("time", class_="listing-item-date").text
+        # Datum des letzten Updates des Inserats
+        ad_update_date = ad.find("time", class_="listing-item-update-date").text
+
+        # Datum des letzten Updates des Inserats ist aktueller als das Datum des Inserats
+        if ad_update_date > ad_date:
+            new_ads.append(ad)
+
+    return new_ads
+
+
+def main():
+    # URL der eBay-Startseite
+    url = "https://www.ebay.de/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313&_nkw=Auto&_sacat=0"
+
+    # Aktuelles Datum
+    now = datetime.datetime.now()
+
+    # Liste der neuen Inserate
+    new_ads = []
+
+    # In einer Schleife alle 5 Sekunden neue Inserate abrufen
+    while True:
+        # Neuen Inserate abrufen
+        new_ads = get_new_ads(url)
+
+        # Wenn es neue Inserate gibt, diese an den Benutzer senden
+        if new_ads:
+            for ad in new_ads:
+                # Titel des Inserats
+                title = ad.find("h2", class_="listing-item-headline").text
+                # Preis des Inserats
+                price = ad.find("div", class_="listing-item-price").text
+                # Kilometerstand des Inserats
+                mileage = ad.find("div", class_="listing-item-mileage").text
+
+                # Nachricht an den Benutzer senden
+                print(f"Neues Inserat: {title} - {price} - {mileage}")
+
+        # 5 Sekunden warten
+        time.sleep(5)
+
+
+if __name__ == "__main__":
+    main()
